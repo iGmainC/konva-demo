@@ -1,8 +1,17 @@
 {
-	"extends": "./tsconfig.node.json",
-	"compilerOptions": {
-		"tsBuildInfoFile": "./node_modules/.tmp/tsconfig.worker.tsbuildinfo",
-		"types": ["vite/client", "./worker-configuration.d.ts"]
-	},
-	"include": ["src/worker"]
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.worker.tsbuildinfo",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "strict": true,
+    "types": ["./worker-configuration.d.ts"]
+  },
+  "include": ["src/worker"]
 }
