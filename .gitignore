@@ -4,6 +4,9 @@ node_modules/
 # 构建产物
 dist/
 
+# Wrangler 本地产物
+.wrangler/
+
 # TypeScript 构建缓存
 *.tsbuildinfo
 

@@ -9,9 +9,13 @@ const NOTE_HEIGHT = 260;
 const NOTE_BODY_WIDTH = 132;
 const ROTATION_MIN = -10;
 const ROTATION_MAX = 10;
+const TAPE_ROTATION_MIN = -12;
+const TAPE_ROTATION_MAX = 12;
 const MIN_STAGE_WIDTH = 320;
 const STAGE_SIDE_PADDING = 24;
 const DELETE_BUTTON_RADIUS = 13;
+const TAPE_WIDTH = 26;
+const TAPE_HEIGHT = 42;
 
 /**
  * 便签配色定义
@@ -23,6 +27,18 @@ type StickyPalette = {
   text: string;
   /** 辅助文字颜色 */
   accentText: string;
+};
+
+/**
+ * 胶带样式定义
+ */
+type TapeStyle = {
+  /** 胶带填充色 */
+  fill: string;
+  /** 胶带透明度 */
+  opacity: number;
+  /** 胶带旋转角度 */
+  rotation: number;
 };
 
 /**
@@ -47,12 +63,19 @@ type StickyNote = {
   rotation: number;
   /** 配色方案 */
   palette: StickyPalette;
+  /** 顶部胶带 */
+  topTape: TapeStyle;
+  /** 底部胶带 */
+  bottomTape: TapeStyle;
 };
 
 /**
  * 预置便签内容
  */
-type StickyTemplate = Omit<StickyNote, "id" | "rotation" | "palette">;
+type StickyTemplate = Omit<
+  StickyNote,
+  "id" | "rotation" | "palette" | "topTape" | "bottomTape"
+>;
 
 /**
  * 便签色板
@@ -63,6 +86,18 @@ const STICKY_PALETTES: StickyPalette[] = [
   { background: "#f4b8c2", text: "#2d1d22", accentText: "#6d4b54" },
   { background: "#232323", text: "#faf7f1", accentText: "#c9c2b8" },
   { background: "#b86a3d", text: "#fff6e9", accentText: "#f6d9bf" },
+];
+
+/**
+ * 胶带色板
+ * 采用半透明暖黄、雾蓝、浅绿等贴纸质感颜色。
+ */
+const TAPE_COLORS = [
+  "rgba(227, 196, 73, 0.48)",
+  "rgba(157, 210, 235, 0.44)",
+  "rgba(185, 221, 179, 0.42)",
+  "rgba(242, 196, 170, 0.42)",
+  "rgba(223, 214, 166, 0.4)",
 ];
 
 /**
@@ -141,11 +176,32 @@ function randomRotation() {
 }
 
 /**
+ * 生成胶带旋转角度
+ * @returns 胶带的轻微随机偏转
+ */
+function randomTapeRotation() {
+  return Number(randomFloat(TAPE_ROTATION_MIN, TAPE_ROTATION_MAX).toFixed(2));
+}
+
+/**
  * 随机获取一个便签色板
  * @returns 配色方案
  */
 function randomPalette() {
   return STICKY_PALETTES[randomInt(0, STICKY_PALETTES.length - 1)];
+}
+
+/**
+ * 随机生成一段胶带样式
+ * @returns 稳定的胶带渲染参数
+ */
+function randomTapeStyle(): TapeStyle {
+  return {
+    fill: TAPE_COLORS[randomInt(0, TAPE_COLORS.length - 1)],
+    // 提高不透明度，让胶带本体更明显，但仍保留材质透感
+    opacity: Number(randomFloat(0.72, 0.86).toFixed(2)),
+    rotation: randomTapeRotation(),
+  };
 }
 
 /**
@@ -160,6 +216,8 @@ function createStickyNote(id: number, template: StickyTemplate): StickyNote {
     id,
     rotation: randomRotation(),
     palette: randomPalette(),
+    topTape: randomTapeStyle(),
+    bottomTape: randomTapeStyle(),
   };
 }
 
@@ -455,6 +513,27 @@ export function StickyNotesDemoPage() {
                   fontSize={12}
                   fontStyle="bold"
                   fill={note.palette.accentText}
+                />
+                {/* 胶带在同一个便签组内晚于底板渲染，确保它压在便签上方但不跨便签串层 */}
+                <Rect
+                  x={NOTE_WIDTH / 2 - TAPE_WIDTH / 2}
+                  y={-18}
+                  width={TAPE_WIDTH}
+                  height={TAPE_HEIGHT}
+                  rotation={note.topTape.rotation}
+                  fill={note.topTape.fill}
+                  opacity={note.topTape.opacity}
+                  cornerRadius={2}
+                />
+                <Rect
+                  x={NOTE_WIDTH / 2 - TAPE_WIDTH / 2}
+                  y={NOTE_HEIGHT - 16}
+                  width={TAPE_WIDTH}
+                  height={TAPE_HEIGHT}
+                  rotation={note.bottomTape.rotation}
+                  fill={note.bottomTape.fill}
+                  opacity={note.bottomTape.opacity}
+                  cornerRadius={2}
                 />
                 {deleteTargetId === note.id ? (
                   <Group
